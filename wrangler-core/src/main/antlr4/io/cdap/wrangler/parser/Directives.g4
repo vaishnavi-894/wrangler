@@ -38,9 +38,6 @@ options {
  */
 }
 
-/**
- * Parser Grammar for recognizing tokens and constructs of the directives language.
- */
 recipe
  : statements EOF
  ;

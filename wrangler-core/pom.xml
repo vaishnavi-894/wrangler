@@ -326,6 +326,17 @@
         <version>${antlr4-maven-plugin.version}</version>
         <configuration>
           <visitor>true</visitor>
+          <arguments>
+            -Dlanguage=Java
+          </arguments>
+          <includes>
+            <include>**/*.g4</include>
+          </includes>
+          <excludes>
+            <exclude>**/*.tokens</exclude>
+          </excludes>
+          <sourceDirectory>src/main/antlr4</sourceDirectory>
+          <outputDirectory>${project.build.directory}/generated-sources/antlr4</outputDirectory>
         </configuration>
         <executions>
           <execution>

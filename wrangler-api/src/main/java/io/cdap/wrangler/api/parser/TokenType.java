@@ -71,6 +71,17 @@ public enum TokenType implements Serializable {
   NUMERIC,
 
   /**
+   * Represents the enumerated type for the object of {@code ByteSize} type.
+   * This type is associated with the token that represents a byte size value with unit (e.g., "10KB", "5MB").
+   */
+  BYTE_SIZE,
+  /**
+   * Represents the enumerated type for the object of {@code TimeDuration} type.
+   * This type is associated with the token that represents a time duration value with unit (e.g., "150ms", "2s").
+   */
+  TIME_DURATION,
+
+  /**
    * Represents the enumerated type for the object of {@code Bool} type.
    * This type is associated with the token that either represents string 'true' or 'false'.
    */
@@ -99,12 +110,6 @@ public enum TokenType implements Serializable {
 
   /**
    * Represents the enumerated type for the object of type {@code NumericList} type.
-   * This type is associated with the collection of {@code Numeric} values separated by
-   * comma(,). E.g.
-   * <code>
-   *   Numeric[,Numeric]*
-   * </code>
-   *
    */
   NUMERIC_LIST,
 

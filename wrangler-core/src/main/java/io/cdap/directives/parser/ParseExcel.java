@@ -172,6 +172,22 @@ public class ParseExcel implements Directive, Lineage {
                     }
                     break;
 
+                  case FORMULA:
+                    value = cell.getCellFormula();
+                    break;
+
+                  case BLANK:
+                    value = "";
+                    break;
+
+                  case ERROR:
+                    value = "Error: " + cell.getErrorCellValue();
+                    break;
+
+                  default:
+                    value = "Unknown type: " + cell.getCellTypeEnum();
+                    break;
+
                   case BOOLEAN:
                     value = String.valueOf(cell.getBooleanCellValue());
                     break;

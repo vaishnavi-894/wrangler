@@ -68,6 +68,8 @@ These directives are currently available:
 | Directive                                                              | Description                                                      |
 | ---------------------------------------------------------------------- | ---------------------------------------------------------------- |
 | **Parsers**                                                            |                                                                  |
+| [Byte Size](wrangler-docs/directives/parse-byte-size.md)                        | Parses byte size values with units (e.g., "10KB", "5MB")       |
+| [Time Duration](wrangler-docs/directives/parse-time-duration.md)                | Parses time duration values with units (e.g., "150ms", "2s")   |
 | [JSON Path](wrangler-docs/directives/json-path.md)                              | Uses a DSL (a JSON path expression) for parsing JSON records     |
 | [Parse as AVRO](wrangler-docs/directives/parse-as-avro.md)                      | Parsing an AVRO encoded message - either as binary or json       |
 | [Parse as AVRO File](wrangler-docs/directives/parse-as-avro-file.md)            | Parsing an AVRO data file                                        |
@@ -89,6 +91,7 @@ These directives are currently available:
 | [Write JSON Object](wrangler-docs/directives/write-as-json-object.md)           | Composes a JSON object based on the fields specified.            |
 | [Format as Currency](wrangler-docs/directives/format-as-currency.md)            | Formats a number as currency as specified by locale.             |
 | **Transformations**                                                    |                                                                  |
+| [Aggregate Stats](wrangler-docs/directives/aggregate-stats.md)                  | Aggregates byte sizes and time durations from columns            |
 | [Changing Case](wrangler-docs/directives/changing-case.md)                      | Changes the case of column values                                |
 | [Cut Character](wrangler-docs/directives/cut-character.md)                      | Selects parts of a string value                                  |
 | [Set Column](wrangler-docs/directives/set-column.md)                            | Sets the column value to the result of an expression execution   |

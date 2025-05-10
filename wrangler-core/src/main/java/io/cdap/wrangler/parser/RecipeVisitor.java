@@ -33,6 +33,7 @@ import io.cdap.wrangler.api.parser.Properties;
 import io.cdap.wrangler.api.parser.Ranges;
 import io.cdap.wrangler.api.parser.Text;
 import io.cdap.wrangler.api.parser.TextList;
+import io.cdap.wrangler.api.parser.TimeDuration;
 import io.cdap.wrangler.api.parser.Token;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.Interval;
@@ -213,8 +214,16 @@ public final class RecipeVisitor extends DirectivesBaseVisitor<RecipeSymbol.Buil
    */
   @Override
   public RecipeSymbol.Builder visitNumber(DirectivesParser.NumberContext ctx) {
-    LazyNumber number = new LazyNumber(ctx.Number().getText());
-    builder.addToken(new Numeric(number));
+    if (ctx.BYTE_SIZE() != null) {
+      String text = ctx.BYTE_SIZE().getText();
+      builder.addToken(new ByteSize(text));
+    } else if (ctx.TIME_DURATION() != null) {
+      String text = ctx.TIME_DURATION().getText();
+      builder.addToken(new TimeDuration(text));
+    } else {
+      LazyNumber number = new LazyNumber(ctx.Number().getText());
+      builder.addToken(new Numeric(number));
+    }
     return builder;
   }
 

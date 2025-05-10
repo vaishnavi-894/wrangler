@@ -98,8 +98,8 @@ public class Flatten implements Directive, Lineage {
           int m = -1;
           if (value instanceof JsonArray) {
             m = ((JsonArray) value).size();
-          } else if (value instanceof List) {
-            m = ((List) value).size();
+          } else if (value instanceof List<?>) {
+            m = ((List<?>) value).size();
           } else {
             m = 1;
           }

@@ -17,26 +17,30 @@
 grammar Directives;
 
 options {
-  language = Java;
+    language = Java;
 }
 
-@lexer::header {
-/*
- * Copyright © 2017-2019 Cask Data, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+fragment BYTE_UNIT
+ : 'B' | 'KB' | 'MB' | 'GB' | 'TB'
+ ;
+
+fragment TIME_UNIT
+ : 'ns' | 'us' | 'ms' | 's' | 'm' | 'h' | 'd'
+ ;
+
+BYTE_SIZE
+ : Number BYTE_UNIT
+ ;
+
+TIME_DURATION
+ : Number TIME_UNIT
+ ;
+
+/**
+ * Parser Grammar for recognizing tokens and constructs of the directives language.
  */
-}
+
+// Parser Rules
 
 recipe
  : statements EOF
@@ -65,47 +69,48 @@ directive
   ;
 
 ifStatement
-  : ifStat elseIfStat* elseStat? '}'
+  : ifStat elseIfStat* elseStat? RBRACE
   ;
 
 ifStat
-  : 'if' expression '{' statements
+  : IF expression LBRACE statements
   ;
 
 elseIfStat
-  : '}' 'else' 'if' expression '{' statements
+  : RBRACE ELSE IF expression LBRACE statements
   ;
 
 elseStat
-  : '}' 'else' '{' statements
+  : RBRACE ELSE LBRACE statements
   ;
 
 expression
-  : '(' (~'(' | expression)* ')'
+  : LPAREN expression RPAREN
+  | LPAREN (~LPAREN | expression)* RPAREN
   ;
 
 forStatement
- : 'for' '(' Identifier '=' expression ';' expression ';' expression ')' '{'  statements '}'
+ : FOR LPAREN Identifier ASSIGN expression SEMI expression SEMI expression RPAREN LBRACE statements RBRACE
  ;
 
 macro
- : Dollar OBrace (~OBrace | macro | Macro)*? CBrace
+ : DOLLAR OBRACE (~OBRACE | macro | MACRO)*? CBRACE
  ;
 
 pragma
- : '#pragma' (pragmaLoadDirective | pragmaVersion)
+ : PRAGMA (pragmaLoadDirective | pragmaVersion)
  ;
 
 pragmaLoadDirective
- : 'load-directives' identifierList
+ : LOAD_DIRECTIVES identifierList
  ;
 
 pragmaVersion
- : 'version' Number
+ : VERSION Number
  ;
 
 codeblock
- : 'exp' Space* ':' condition
+ : EXP COLON condition
  ;
 
 identifier
@@ -113,27 +118,23 @@ identifier
  ;
 
 properties
- : 'prop' ':' OBrace (propertyList)+  CBrace
- | 'prop' ':' OBrace OBrace (propertyList)+ CBrace { notifyErrorListeners("Too many start paranthesis"); }
- | 'prop' ':' OBrace (propertyList)+ CBrace CBrace { notifyErrorListeners("Too many start paranthesis"); }
- | 'prop' ':' (propertyList)+ CBrace { notifyErrorListeners("Missing opening brace"); }
- | 'prop' ':' OBrace (propertyList)+  { notifyErrorListeners("Missing closing brace"); }
+ : PROP COLON OBRACE (propertyList)+ CBRACE
  ;
 
 propertyList
- : property (',' property)*
+ : property (COMMA property)*
  ;
 
 property
- : Identifier '=' ( text | number | bool )
+ : Identifier ASSIGN ( text | number | bool )
  ;
 
 numberRanges
- : numberRange ( ',' numberRange)*
+ : numberRange (COMMA numberRange)*
  ;
 
 numberRange
- : Number ':' Number '=' value
+ : Number COLON Number ASSIGN value
  ;
 
 value
@@ -141,7 +142,7 @@ value
  ;
 
 ecommand
- : '!' Identifier
+ : EXCLAMATION Identifier
  ;
 
 config
@@ -158,14 +159,22 @@ text
 
 number
  : Number
+ | BYTE_SIZE
+ | TIME_DURATION
  ;
+
+// Parser Rules
+
+// Whitespace and comments
+WS: [ \t\r\n]+ -> skip;
+COMMENT: '#' ~('\n'|'\r')* -> skip;
 
 bool
  : Bool
  ;
 
 condition
- : OBrace (~CBrace | condition)* CBrace
+ : OBRACE (~CBrace | condition)* CBrace
  ;
 
 command
@@ -173,138 +182,142 @@ command
  ;
 
 colList
- : Column (','  Column)+
+ : Column (COMMA Column)+
  ;
 
 numberList
- : Number (',' Number)+
+ : Number (COMMA Number)+
+ | BYTE_SIZE (COMMA BYTE_SIZE)+
+ | TIME_DURATION (COMMA TIME_DURATION)+
  ;
 
 boolList
- : Bool (',' Bool)+
+ : Bool (COMMA Bool)+
  ;
 
 stringList
- : String (',' String)+
+ : String (COMMA String)+
  ;
 
 identifierList
- : Identifier (',' Identifier)*
+ : Identifier (COMMA Identifier)*
  ;
 
 
-/*
- * Following are the Lexer Rules used for tokenizing the recipe.
- */
-OBrace   : '{';
-CBrace   : '}';
-SColon   : ';';
-Or       : '||';
-And      : '&&';
-Equals   : '==';
-NEquals  : '!=';
-GTEquals : '>=';
-LTEquals : '<=';
-Match    : '=~';
-NotMatch : '!~';
-QuestionColon : '?:';
-StartsWith : '=^';
-NotStartsWith : '!^';
-EndsWith : '=$';
-NotEndsWith : '!$';
-PlusEqual : '+=';
-SubEqual : '-=';
-MulEqual : '*=';
-DivEqual : '/=';
-PerEqual : '%=';
-AndEqual : '&=';
-OrEqual  : '|=';
-XOREqual : '^=';
-Pow      : '^';
-External : '!';
-GT       : '>';
-LT       : '<';
-Add      : '+';
-Subtract : '-';
-Multiply : '*';
-Divide   : '/';
-Modulus  : '%';
-OBracket : '[';
-CBracket : ']';
-OParen   : '(';
-CParen   : ')';
-Assign   : '=';
-Comma    : ',';
-QMark    : '?';
-Colon    : ':';
-Dot      : '.';
-At       : '@';
-Pipe     : '|';
-BackSlash: '\\';
-Dollar   : '$';
-Tilde    : '~';
+// Lexer Rules
 
+// Whitespace and comments
+WS: [ \t\r\n]+ -> skip;
+COMMENT: '#' ~('\n'|'\r')* -> skip;
 
-Bool
- : 'true'
- | 'false'
- ;
+// Punctuation
+SEMI: ';';
+LPAREN: '(';
+RPAREN: ')';
+LBRACE: '{';
 
-Number
- : Int ('.' Digit*)?
- ;
+// Byte Size and Time Duration
+BYTE_SIZE: Number ('B' | 'KiB' | 'MiB' | 'GiB' | 'TiB');
+TIME_DURATION: Number ('ns' | 'us' | 'ms' | 's' | 'm' | 'h' | 'd');
+RBRACE: '}';
+LBRACK: '[';
+RBRACK: ']';
+COMMA: ',';
+DOT: '.';
+COLON: ':';
+ASSIGN: '=';
+PLUS: '+';
+MINUS: '-';
+STAR: '*';
+SLASH: '/';
+PERCENT: '%';
+LT: '<';
+GT: '>';
+LE: '<=';
+GE: '>=';
+EQ: '==';
+NE: '!=';
 
-Identifier
- : [a-zA-Z_\-] [a-zA-Z_0-9\-]*
- ;
+// Keywords
+IF: 'if';
+ELSE: 'else';
+FOR: 'for';
+VERSION: 'version';
+LOAD_DIRECTIVES: 'load_directives';
+EXP: 'exp';
+PROP: 'prop';
+EXCLAMATION: '!';
+PRAGMA: '#pragma';
 
-Macro
- : [a-zA-Z_] [a-zA-Z_0-9]*
- ;
+// Tokens
+Comment: '#' ~('\n'|'\r')*;
+DOLLAR: '$';
+OBRACE: '{';
+CBRACE: '}';
+LBRACE: '(';
+RBRACE: ')';
+LBRACK: '[';
+RBRACK: ']';
+COMMA: ',';
+DOT: '.';
+COLON: ':';
+ASSIGN: '=';
+PLUS: '+';
+MINUS: '-';
+STAR: '*';
+SLASH: '/';
+PERCENT: '%';
+LT: '<';
+GT: '>'; 
+LE: '<=';
+GE: '>=';
+EQ: '==';
+NE: '!=';
+SEMI: ';';
 
-Column
- : ':' [a-zA-Z_\-] [:a-zA-Z_0-9\-]*
- ;
+// Literals
+INT: [0-9]+;
+FLOAT: [0-9]+ ('.' [0-9]*)?;
+BYTE_SIZE: INT ('.' [0-9]*)? ('B' | 'KiB' | 'MiB' | 'GiB' | 'TiB');
+TIME_DURATION: INT ('.' [0-9]*)? ('ns' | 'us' | 'ms' | 's' | 'm' | 'h' | 'd');
+STRING: '"' (~['"\n\r] | '\"')* '"';
+TRUE: 'true';
+FALSE: 'false';
+NULL: 'null';
 
-String
- : '\'' ( EscapeSequence | ~('\'') )* '\''
- | '"'  ( EscapeSequence | ~('"') )* '"'
- ;
+// Identifiers
+ID: [a-zA-Z_] [a-zA-Z_0-9]*;
+Identifier: ID;
+Column: ':' [a-zA-Z_\-] [:a-zA-Z_0-9\-]*;
+Macro: [a-zA-Z_] [a-zA-Z_0-9]*;
+Number: INT ('.' Digit*)?;
+Bool: TRUE | FALSE;
 
-EscapeSequence
-   :   '\\' ('b'|'t'|'n'|'f'|'r'|'"'|'\''|'\\')
+// Escape sequences
+fragment EscapedChar
+   :   '\' ('b'|'t'|'n'|'f'|'r'|'"'|'\'|'\\')
    |   UnicodeEscape
    |   OctalEscape
    ;
 
 fragment
 OctalEscape
-   :   '\\' ('0'..'3') ('0'..'7') ('0'..'7')
-   |   '\\' ('0'..'7') ('0'..'7')
-   |   '\\' ('0'..'7')
+   :   '\' ('0'..'3') ('0'..'7') ('0'..'7')
+   |   '\' ('0'..'7') ('0'..'7')
+   |   '\' ('0'..'7')
    ;
 
 fragment
 UnicodeEscape
-   :   '\\' 'u' HexDigit HexDigit HexDigit HexDigit
+   :   '\' 'u' HexDigit HexDigit HexDigit HexDigit
    ;
 
-fragment
-   HexDigit : ('0'..'9'|'a'..'f'|'A'..'F') ;
+fragment HexDigit : ('0'..'9'|'a'..'f'|'A'..'F') ;
 
+// Comments and whitespace
 Comment
  : ('//' ~[\r\n]* | '/*' .*? '*/' | '--' ~[\r\n]* ) -> skip
- ;
+;
 
-Space
- : [ \t\r\n\u000C]+ -> skip
- ;
-
-fragment Int
- : '-'? [1-9] Digit* [L]*
- | '0'
- ;
-
-fragment Digit
- : [0-9]
- ;
+// Number fragments
+fragment Digit : [0-9] ;
